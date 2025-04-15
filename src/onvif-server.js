@@ -377,6 +377,15 @@ class OnvifServer {
     startDiscovery() {
         this.discoveryMessageNo = 0;
         this.discoverySocket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+
+        this.discoverySocket.on('error', (err) => {
+            console.error('Discovery socket error:', err);
+            try {
+                this.discoverySocket.close();
+            } catch (closeErr) {
+                console.error('Error closing discovery socket:', closeErr);
+            }
+        });
         
         this.discoverySocket.on('message', (message, remote) => {
             xml2js.parseString(message.toString(), { tagNameProcessors: [xml2js['processors'].stripPrefix] }, (err, result) => {
