@@ -484,7 +484,19 @@ function generateCombinedNetworkScript(configs, ipAddresses) {
                 // Add conditional IP assignment based on mode
                 script += `if [ "$USE_DHCP" = true ]; then\n`;
                 script += `    echo "Requesting IP address for ${interfaceName} via DHCP..."\n`;
-                script += `    dhclient -v ${interfaceName} &\n`;
+                script += `    dhclient -v ${interfaceName}\n`;
+                script += `    # Wait for IP assignment (timeout 20s)\n`;
+                script += `    for i in {1..20}; do\n`;
+                script += `        ip_addr=$(ip -4 addr show ${interfaceName} | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}')\n`;
+                script += `        if [ -n "$ip_addr" ]; then\n`;
+                script += `            echo "${interfaceName} got IP: $ip_addr"\n`;
+                script += `            break\n`;
+                script += `        fi\n`;
+                script += `        sleep 1\n`;
+                script += `    done\n`;
+                script += `    if [ -z "$ip_addr" ]; then\n`;
+                script += `        echo "Warning: ${interfaceName} did not get an IP address after 20 seconds."\n`;
+                script += `    fi\n`;
                 script += `else\n`;
                 script += `    echo "Assigning static IP ${staticIp}/24 to ${interfaceName}..."\n`;
                 script += `    ip addr add ${staticIp}/24 dev ${interfaceName}\n`;

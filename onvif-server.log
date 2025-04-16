@@ -1,0 +1,75 @@
+nohup: ignoring input
+15:47:49.258 INFO  Starting virtual onvif server for VideoSourceConfig_Channel1 on 192.168.6.211:8081 ...
+15:47:49.260 INFO    Started!
+15:47:49.260 INFO  
+15:47:49.261 INFO  Starting virtual onvif server for VideoSourceConfig_Channel2 on 192.168.6.244:8082 ...
+15:47:49.261 INFO    Started!
+15:47:49.261 INFO  
+15:47:49.261 INFO  Starting virtual onvif server for VideoSourceConfig_Channel3 on 192.168.6.223:8083 ...
+15:47:49.261 INFO    Started!
+15:47:49.261 INFO  
+15:47:49.262 INFO  Starting virtual onvif server for VideoSourceConfig_Channel4 on 192.168.6.245:8084 ...
+15:47:49.262 INFO    Started!
+15:47:49.262 INFO  
+15:47:49.262 INFO  Starting virtual onvif server for VideoSourceConfig_Channel5 on 192.168.6.254:8085 ...
+15:47:49.263 INFO    Started!
+15:47:49.263 INFO  
+15:47:49.263 INFO  Starting virtual onvif server for VideoSourceConfig_Channel6 on 192.168.6.241:8086 ...
+15:47:49.263 INFO    Started!
+15:47:49.263 INFO  
+15:47:49.264 INFO  Starting virtual onvif server for VideoSourceConfig_Channel7 on 192.168.6.252:8087 ...
+15:47:49.264 INFO    Started!
+15:47:49.264 INFO  
+15:47:49.264 INFO  Starting virtual onvif server for VideoSourceConfig_Channel8 on 192.168.6.224:8088 ...
+15:47:49.265 INFO    Started!
+15:47:49.265 INFO  
+15:47:49.265 INFO  Starting virtual onvif server for VideoSourceConfig_Channel9 on 192.168.6.246:8089 ...
+15:47:49.265 INFO    Started!
+15:47:49.265 INFO  
+15:47:49.266 INFO  Starting virtual onvif server for VideoSourceConfig_Channel10 on 192.168.6.207:8090 ...
+15:47:49.266 INFO    Started!
+15:47:49.266 INFO  
+15:47:49.266 INFO  Starting virtual onvif server for VideoSourceConfig_Channel11 on 192.168.6.214:8091 ...
+15:47:49.266 INFO    Started!
+15:47:49.266 INFO  
+15:47:49.267 INFO  Starting virtual onvif server for VideoSourceConfig_Channel12 on 192.168.6.202:8092 ...
+15:47:49.267 INFO    Started!
+15:47:49.267 INFO  
+15:47:49.267 INFO  Starting virtual onvif server for VideoSourceConfig_Channel13 on 192.168.6.203:8093 ...
+15:47:49.267 INFO    Started!
+15:47:49.267 INFO  
+15:47:49.268 INFO  Starting virtual onvif server for VideoSourceConfig_Channel14 on 192.168.6.217:8094 ...
+15:47:49.268 INFO    Started!
+15:47:49.268 INFO  
+15:47:49.268 INFO  Starting virtual onvif server for VideoSourceConfig_Channel15 on 192.168.6.208:8095 ...
+15:47:49.268 INFO    Started!
+15:47:49.268 INFO  
+15:47:49.269 INFO  Starting virtual onvif server for VideoSourceConfig_Channel16 on 192.168.6.215:8096 ...
+15:47:49.269 INFO    Started!
+15:47:49.269 INFO  
+15:47:49.269 INFO  Starting tcp proxy from port 8554 to 192.168.6.219:554 ...
+15:47:49.270 INFO    Started!
+15:47:49.270 INFO  
+15:47:49.270 INFO  Starting tcp proxy from port 8580 to 192.168.6.219:80 ...
+15:47:49.270 INFO    Started!
+15:47:49.270 INFO  
+(node:6113) [DEP0044] DeprecationWarning: The `util.isArray` API is deprecated. Please use `Array.isArray()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:6113) [DEP0047] DeprecationWarning: The `util.isDate` API is deprecated.  Please use `arg instanceof Date` instead.
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: bind EADDRINUSE 0.0.0.0
+    at node:dgram:397:20
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+Emitted 'error' event on Socket instance at:
+    at node:dgram:399:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21) {
+  errno: -98,
+  code: 'EADDRINUSE',
+  syscall: 'bind',
+  address: '0.0.0.0'
+}
+
+Node.js v22.14.0
