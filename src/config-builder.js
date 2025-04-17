@@ -393,26 +393,28 @@ function generateCombinedNetworkScript(configs, ipAddresses) {
     script += `# Generated for NVRs: ${ipAddresses.join(', ')}\n`;
     script += `# Generated on: ${new Date().toISOString()}\n\n`;
     
-    script += `# Parse command line arguments\n`;
-    script += `USE_DHCP=false # Default to static IPs\n`;
-    script += `while [[ "$#" -gt 0 ]]; do\n`;
-    script += `    case $1 in\n`;
-    script += `        --dhcp) USE_DHCP=true ;;\n`;
-    script += `        *) echo "Unknown parameter: $1"; exit 1 ;;\n`;
-    script += `    esac\n`;
-    script += `    shift\n`;
-    script += `done\n\n`;
+    // Remove argument parsing and DHCP check for combined script - always static
+    // script += `# Parse command line arguments\n`;
+    // script += `USE_DHCP=false # Default to static IPs\n`;
+    // script += `while [[ "$#" -gt 0 ]]; do\n`;
+    // script += `    case $1 in\n`;
+    // script += `        --dhcp) USE_DHCP=true ;;\n`;
+    // script += `        *) echo "Unknown parameter: $1"; exit 1 ;;\n`;
+    // script += `    esac\n`;
+    // script += `    shift\n`;
+    // script += `done\n\n`;
     
-    script += `# Check if dhclient is installed when using DHCP\n`;
-    script += `if [ "$USE_DHCP" = true ] && ! command -v dhclient &> /dev/null; then\n`;
-    script += `    echo "dhclient not found. Please install it with:"\n`;
-    script += `    echo "  sudo apt-get install isc-dhcp-client    (for Debian/Ubuntu)"\n`;
-    script += `    echo "  sudo yum install dhcp-client            (for CentOS/RHEL)"\n`;
-    script += `    echo "Or use --static to assign static IPs instead."\n`;
-    script += `    exit 1\n`;
-    script += `fi\n\n`;
+    // script += `# Check if dhclient is installed when using DHCP\n`;
+    // script += `if [ "$USE_DHCP" = true ] && ! command -v dhclient &> /dev/null; then\n`;
+    // script += `    echo "dhclient not found. Please install it with:"\n`;
+    // script += `    echo "  sudo apt-get install isc-dhcp-client    (for Debian/Ubuntu)"\n`;
+    // script += `    echo "  sudo yum install dhcp-client            (for CentOS/RHEL)"\n`;
+    // script += `    echo "Or use --static to assign static IPs instead."\n`;
+    // script += `    exit 1\n`;
+    // script += `fi\n\n`;
     
     // Get the physical interface name once at the beginning
+    // NOTE: This duplicates the initial script setup - ensure consistency if changed above
     script = `#!/bin/bash\n\n` +
              `# Combined network setup script for multiple ONVIF virtual interfaces\n` +
              `# Generated for NVRs: ${ipAddresses.join(', ')}\n` +
@@ -429,17 +431,18 @@ function generateCombinedNetworkScript(configs, ipAddresses) {
              `# Configure ARP settings for physical interface\n` +
              `echo "Configuring ARP settings for physical interface $PHYS_IFACE..."\n` +
              `echo 1 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_ignore\n` +
-             `echo 2 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_announce\n\n` +
+             `echo 2 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_announce\n\n`;
              
-             `# Parse command line arguments\n` +
-             `USE_DHCP=true\n` +
-             `while [[ "$#" -gt 0 ]]; do\n` +
-             `    case $1 in\n` +
-             `        --static) USE_DHCP=false ;;\n` +
-             `        *) echo "Unknown parameter: $1"; exit 1 ;;\n` +
-             `    esac\n` +
-             `    shift\n` +
-             `done\n\n`;
+             // Remove argument parsing - combined script is always static
+             //`# Parse command line arguments\n` +
+             //`USE_DHCP=true\n` + // This was incorrect, should have been false if kept
+             //`while [[ "$#" -gt 0 ]]; do\n` +
+             //`    case $1 in\n` +
+             //`        --static) USE_DHCP=false ;;\n` + // This logic was for the single script
+             //`        *) echo "Unknown parameter: $1"; exit 1 ;;\n` +
+             //`    esac\n` +
+             //`    shift\n` +
+             //`done\n\n`;
     
     script += `# Create a mapping file for MAC to interface name and IP\n`;
     script += `cat > mac_to_interface.txt << EOF\n`;
@@ -476,6 +479,49 @@ function generateCombinedNetworkScript(configs, ipAddresses) {
     
     script += `\n# Create new virtual interfaces\n`;
     
+    // Add helper function for interface verification
+    script += `# Helper function to verify interface creation and IP assignment\n`;
+    script += `verify_interface() {\n`;
+    script += `    local iface=$1\n`;
+    script += `    local ip=$2\n`;
+    script += `    local max_attempts=30\n`;
+    script += `    local delay=0.5\n`;
+    script += `    local attempt=1\n\n`;
+    
+    script += `    echo "Verifying interface $iface with IP $ip..."\n\n`;
+    
+    script += `    # First verify the interface exists\n`;
+    script += `    while [ $attempt -le $max_attempts ]; do\n`;
+    script += `        if ip link show $iface &>/dev/null; then\n`;
+    script += `            echo "  Interface $iface exists. Checking IP address..."\n`;
+    script += `            break\n`;
+    script += `        fi\n`;
+    script += `        echo "  Waiting for interface $iface to be created (attempt $attempt/$max_attempts)"\n`;
+    script += `        sleep $delay\n`;
+    script += `        attempt=$((attempt+1))\n`;
+    script += `    done\n\n`;
+    
+    script += `    if ! ip link show $iface &>/dev/null; then\n`;
+    script += `        echo "  ERROR: Interface $iface could not be created after $max_attempts attempts!"\n`;
+    script += `        return 1\n`;
+    script += `    fi\n\n`;
+    
+    script += `    # Now verify IP address is assigned\n`;
+    script += `    attempt=1\n`;
+    script += `    while [ $attempt -le $max_attempts ]; do\n`;
+    script += `        if ip addr show $iface | grep -q "$ip"; then\n`;
+    script += `            echo "  Success: Interface $iface has IP address $ip"\n`;
+    script += `            return 0\n`;
+    script += `        fi\n`;
+    script += `        echo "  Waiting for IP $ip to be assigned to $iface (attempt $attempt/$max_attempts)"\n`;
+    script += `        sleep $delay\n`;
+    script += `        attempt=$((attempt+1))\n`;
+    script += `    done\n\n`;
+    
+    script += `    echo "  ERROR: IP address $ip could not be assigned to $iface after $max_attempts attempts!"\n`;
+    script += `    return 1\n`;
+    script += `}\n\n`;
+    
     // Add commands to create new interfaces from all configs
     globalIndex = 1;
     for (const config of configs) {
@@ -486,45 +532,37 @@ function generateCombinedNetworkScript(configs, ipAddresses) {
                 const staticIp = generateStaticIp(globalIndex);
                 
                 // Create macvlan interface as specified in the README
+                script += `echo "Creating interface ${globalIndex}/${configs.reduce((count, c) => count + (c?.onvif?.length || 0), 0)}: ${interfaceName}"\n`;
                 script += `ip link add ${interfaceName} link $PHYS_IFACE address ${macAddress} type macvlan mode bridge\n`;
                 script += `ip link set ${interfaceName} up\n`;
                 
-                // Add conditional IP assignment based on mode
-                script += `if [ "$USE_DHCP" = true ]; then\n`;
-                script += `    echo "Requesting IP address for ${interfaceName} via DHCP..."\n`;
-                script += `    dhclient -v ${interfaceName}\n`;
-                script += `    # Wait for IP assignment (timeout 20s)\n`;
-                script += `    for i in {1..20}; do\n`;
-                script += `        ip_addr=$(ip -4 addr show ${interfaceName} | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}')\n`;
-                script += `        if [ -n "$ip_addr" ]; then\n`;
-                script += `            echo "${interfaceName} got IP: $ip_addr"\n`;
-                script += `            break\n`;
-                script += `        fi\n`;
-                script += `        sleep 1\n`;
-                script += `    done\n`;
-                script += `    if [ -z "$ip_addr" ]; then\n`;
-                script += `        echo "Warning: ${interfaceName} did not get an IP address after 20 seconds."\n`;
-                script += `    fi\n`;
-                script += `else\n`;
-                script += `    echo "Assigning static IP ${staticIp}/24 to ${interfaceName}..."\n`;
-                script += `    ip addr add ${staticIp}/24 dev ${interfaceName}\n`;
-                script += `fi\n`;
+                script += `echo "Assigning static IP ${staticIp}/24 to ${interfaceName}..."\n`;
+                script += `ip addr add ${staticIp}/24 dev ${interfaceName}\n`;
                 
-                // Add ARP configuration as mentioned in the README troubleshooting section
+                // Add ARP configuration
                 script += `echo 1 > /proc/sys/net/ipv4/conf/${interfaceName}/arp_ignore\n`;
                 script += `echo 2 > /proc/sys/net/ipv4/conf/${interfaceName}/arp_announce\n\n`;
+                
+                // Verify interface creation and IP assignment
+                script += `verify_interface ${interfaceName} ${staticIp}\n`;
+                script += `if [ $? -ne 0 ]; then\n`;
+                script += `    echo "WARNING: Interface ${interfaceName} or IP ${staticIp} verification failed. Manual check recommended."\n`;
+                script += `fi\n\n`;
+                
+                // Add a small delay between interface creations to prevent race conditions
+                script += `sleep 0.1\n\n`;
                 
                 globalIndex++;
             }
         }
     }
     
-    script += `# Wait for IP assignment to complete and display IP addresses\n`;
-    script += `sleep 3\n`;
+    script += `echo "Network interface setup complete."\n`;
     script += `echo "Virtual interface IP addresses:"\n`;
     script += `ip -4 addr show | grep -A 2 "onv" | grep -v "valid_lft"\n`;
     
-    script += `\necho "Static IP assignment is the default. To use DHCP instead, run: sudo $0 --dhcp"\n`;
+    // Remove echo about switching modes
+    // script += `\necho "Static IP assignment is the default. To use DHCP instead, run: sudo $0 --dhcp"\n`;
     
     return script;
 }
@@ -553,7 +591,7 @@ function loadExistingConfig(filename) {
  * @param {string} password - The password for the NVR
  * @returns {Object|null} Test config with one camera or null if failed
  */
-exports.createTestConfig = async function(hostname, username, password) {
+async function createTestConfig(hostname, username, password) {
     let config = null;
     try {
         // Get the full config first
@@ -593,7 +631,7 @@ exports.createTestConfig = async function(hostname, username, password) {
     return config;
 };
 
-exports.createConfig = async function(hostname, username, password) {
+async function createConfigWrapper(hostname, username, password) { // Renamed to avoid conflict with internal createConfig
     let config = null; // Initialize config to null
     try {
         config = await createConfig(hostname, username, password);
@@ -773,3 +811,13 @@ exports.createConfig = async function(hostname, username, password) {
 
     return config; // Return config (which might be null if all attempts failed)
 }
+
+// Assign the wrapper function to the export
+exports.createConfig = createConfigWrapper;
+
+// Export necessary functions
+exports.createConfig = createConfig;
+exports.createTestConfig = createTestConfig;
+exports.generateNetworkScript = generateNetworkScript;
+exports.generateCombinedNetworkScript = generateCombinedNetworkScript;
+exports.generateStaticIp = generateStaticIp; // Add this export

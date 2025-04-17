@@ -1,0 +1,87 @@
+# ONVIF Server Project Rules & Patterns
+
+## Code Structure
+
+1. **Module Exports Pattern**
+   - Core server functionality is in `src/onvif-server.js`
+   - Configuration utilities in `src/config-builder.js`
+   - Main application entry in `main.js`
+   - Helper scripts in project root
+
+2. **Configuration Approach**
+   - YAML is used for all configuration files
+   - Individual NVR configs: `config-<ip>.yaml`
+   - Combined NVR config: `config-combined.yaml`
+   - Network scripts generated alongside configs
+
+3. **Naming Conventions**
+   - Network interfaces: `onv<index>_<shortMac>`
+   - Static IPs: `192.168.6.<2+index>`
+   - Server ports start at 8081 and increment
+   - Proxy ports: RTSP (8554+) and Snapshot (8580+)
+
+## Technical Patterns
+
+1. **Network Interface Management**
+   - Virtual interfaces use macvlan mode bridge
+   - ARP settings configuration required
+   - Static IP assignment is preferred over DHCP
+   - MAC addresses are deterministically generated
+
+2. **Proxy Port Assignment**
+   - Ports are assigned per NVR to avoid conflicts
+   - RTSP ports increment by 2 (for RTCP)
+   - Snapshot ports increment by 1
+   - Base ports: RTSP=8554, Snapshot=8580
+
+3. **Error Handling**
+   - Use `try/catch` blocks for SOAP operations
+   - Socket errors should be caught and handled gracefully
+   - Prefer disabling problematic features over crash prevention
+   - Debug mode for verbose logging
+
+4. **ONVIF Protocol Implementation**
+   - Device and Media services are required
+   - WSDL files are vendored locally in `wsdl/` directory
+   - SOAP 1.2 headers are enforced
+
+## Testing & Deployment
+
+1. **Testing Flow**
+   - Generate network interfaces first
+   - Start server with debug flag
+   - Verify port assignments in logs
+   - Test camera adoption in UniFi Protect
+   - Monitor logs for errors
+
+2. **Deployment Requirements**
+   - Linux with macvlan support
+   - Root access for network configuration
+   - Node.js environment
+   - Scripts must be executable (`chmod +x`)
+
+## Common Issues
+
+1. **Network Interface Problems**
+   - Interfaces don't persist across reboots
+   - IP assignment might be delayed
+   - Interface names limited to 15 characters
+   - ARP configuration needed for proper routing
+
+2. **Port Conflicts**
+   - Multiple server instances cause EADDRINUSE on discovery port
+   - RTSP and Snapshot ports must be unique per NVR
+   - Server ports must be unique per camera
+
+3. **ONVIF Discovery**
+   - UDP multicasting can be unreliable
+   - Some NVRs don't use standard discovery
+   - Manual camera addition might be needed
+
+## Development Workflow
+
+1. Create or modify configuration with `--create-config`
+2. Apply network configuration with setup script
+3. Start server with `node main.js <config>`
+4. Debug with `--debug` flag when issues occur
+5. Update both configuration and scripts when adding cameras

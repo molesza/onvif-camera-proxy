@@ -11,28 +11,21 @@ Date.prototype.stdTimezoneOffset = function() {
     let jan = new Date(this.getFullYear(), 0, 1);
     let jul = new Date(this.getFullYear(), 6, 1);
     return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-}
+};
 
 Date.prototype.isDstObserved = function() {
     return this.getTimezoneOffset() < this.stdTimezoneOffset();
-}
+};
 
-function getIpAddressFromMac(macAddress) {
-    let networkInterfaces = os.networkInterfaces();
-    for (let interface in networkInterfaces)
-        for (let network of networkInterfaces[interface])
-            if (network.family == 'IPv4' && network.mac.toLowerCase() == macAddress.toLowerCase())
-                return network.address;
-    return null;
-}
-
+// Define the OnvifServer class
 class OnvifServer {
-    constructor(config, logger) {
+    // Accept ipAddress directly in the constructor
+    constructor(config, logger, ipAddress) {
         this.config = config;
         this.logger = logger;
 
-        if (!this.config.hostname)
-            this.config.hostname = getIpAddressFromMac(this.config.mac);
+        // Assign the pre-calculated IP address
+        this.config.hostname = ipAddress;
 
         this.videoSource = {
             attributes: {
@@ -238,7 +231,7 @@ class OnvifServer {
                                         MaximumNumberOfProfiles: this.profiles.length
                                     }
                                 }
-                            }
+                            };
                         }
 
                         return response;
@@ -276,7 +269,6 @@ class OnvifServer {
                             HardwareId: `${this.config.name.replace(' ', '_')}-1001`
                         };
                     }
-                
                 }
             },
         
@@ -445,14 +437,15 @@ class OnvifServer {
             return this.discoverySocket.addMembership('239.255.255.250', this.config.hostname);
         });
     }
-
-    getHostname() {
-        return this.config.hostname;
-    }
-};
-
-function createServer(config) {
-    return new OnvifServer(config);
 }
 
-exports.createServer = createServer;
+// Factory function to create OnvifServer instances
+function createServer(config, logger, ipAddress) {
+    return new OnvifServer(config, logger, ipAddress);
+}
+
+// Export both the class and the factory function
+module.exports = {
+    OnvifServer: OnvifServer,
+    createServer: createServer
+};
