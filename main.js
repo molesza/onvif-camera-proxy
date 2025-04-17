@@ -86,17 +86,18 @@ if (args) {
         }
 
         let proxies = {};
-        let discoveryStarted = false;
+        // let discoveryStarted = false; // Discovery completely disabled
 
         for (let onvifConfig of config.onvif) {
             let server = onvifServer.createServer(onvifConfig, logger);
             if (server.getHostname()) {
                 logger.info(`Starting virtual onvif server for ${onvifConfig.name} on ${server.getHostname()}:${onvifConfig.ports.server} ...`);
                 server.startServer();
-                if (!discoveryStarted) {
-                    server.startDiscovery();
-                    discoveryStarted = true;
-                }
+                // Discovery call removed
+                // if (!discoveryStarted) {
+                //     server.startDiscovery();
+                //     discoveryStarted = true;
+                // }
                 if (args.debug)
                     server.enableDebugOutput();
                 logger.info('  Started!');

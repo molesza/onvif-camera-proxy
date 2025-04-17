@@ -2,7 +2,7 @@
 
 # Network setup script for ONVIF virtual interfaces
 # Generated for NVR: 192.168.6.201
-# Generated on: 2025-04-16T13:08:14.256Z
+# Generated on: 2025-04-17T11:04:32.066Z
 
 # Get the physical interface name (look for the interface with the host IP)
 HOST_IP=$(hostname -I | awk '{print $1}')
@@ -12,12 +12,16 @@ if [ -z "$PHYS_IFACE" ]; then
     exit 1
 fi
 echo "Using physical interface: $PHYS_IFACE"
+# Configure ARP settings for physical interface
+echo "Configuring ARP settings for physical interface $PHYS_IFACE..."
+echo 1 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_ignore
+echo 2 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_announce
 
 # Parse command line arguments
-USE_DHCP=false
+USE_DHCP=false # Default to static IPs
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --static) USE_DHCP=false ;;
+        --dhcp) USE_DHCP=true ;;
         *) echo "Unknown parameter: $1"; exit 1 ;;
     esac
     shift
@@ -620,4 +624,4 @@ sleep 3
 echo "Virtual interface IP addresses:"
 ip -4 addr show | grep -A 2 "onv" | grep -v "valid_lft"
 
-echo "To use static IP addresses instead of DHCP, run: sudo $0 --static"
+echo "Static IP assignment is the default. To use DHCP instead, run: sudo $0 --dhcp"

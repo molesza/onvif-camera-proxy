@@ -70,13 +70,17 @@ function generateNetworkScript(config, nvrIp) {
                 `    echo "Error: Could not determine physical interface"\n` +
                 `    exit 1\n` +
                 `fi\n` +
-                `echo "Using physical interface: $PHYS_IFACE"\n\n` +
+                `echo "Using physical interface: $PHYS_IFACE"\n` +
+                `# Configure ARP settings for physical interface\n` +
+                `echo "Configuring ARP settings for physical interface $PHYS_IFACE..."\n` +
+                `echo 1 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_ignore\n` +
+                `echo 2 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_announce\n\n` +
                 
                 `# Parse command line arguments\n` +
-                `USE_DHCP=true\n` +
+                `USE_DHCP=false # Default to static IPs\n` +
                 `while [[ "$#" -gt 0 ]]; do\n` +
                 `    case $1 in\n` +
-                `        --static) USE_DHCP=false ;;\n` +
+                `        --dhcp) USE_DHCP=true ;;\n` +
                 `        *) echo "Unknown parameter: $1"; exit 1 ;;\n` +
                 `    esac\n` +
                 `    shift\n` +
@@ -153,7 +157,7 @@ function generateNetworkScript(config, nvrIp) {
     script += `echo "Virtual interface IP addresses:"\n`;
     script += `ip -4 addr show | grep -A 2 "onv" | grep -v "valid_lft"\n`;
     
-    script += `\necho "To use static IP addresses instead of DHCP, run: sudo $0 --static"\n`;
+    script += `\necho "Static IP assignment is the default. To use DHCP instead, run: sudo $0 --dhcp"\n`;
     
     return script;
 }
@@ -390,10 +394,10 @@ function generateCombinedNetworkScript(configs, ipAddresses) {
     script += `# Generated on: ${new Date().toISOString()}\n\n`;
     
     script += `# Parse command line arguments\n`;
-    script += `USE_DHCP=true\n`;
+    script += `USE_DHCP=false # Default to static IPs\n`;
     script += `while [[ "$#" -gt 0 ]]; do\n`;
     script += `    case $1 in\n`;
-    script += `        --static) USE_DHCP=false ;;\n`;
+    script += `        --dhcp) USE_DHCP=true ;;\n`;
     script += `        *) echo "Unknown parameter: $1"; exit 1 ;;\n`;
     script += `    esac\n`;
     script += `    shift\n`;
@@ -421,7 +425,11 @@ function generateCombinedNetworkScript(configs, ipAddresses) {
              `    echo "Error: Could not determine physical interface"\n` +
              `    exit 1\n` +
              `fi\n` +
-             `echo "Using physical interface: $PHYS_IFACE"\n\n` +
+             `echo "Using physical interface: $PHYS_IFACE"\n` +
+             `# Configure ARP settings for physical interface\n` +
+             `echo "Configuring ARP settings for physical interface $PHYS_IFACE..."\n` +
+             `echo 1 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_ignore\n` +
+             `echo 2 > /proc/sys/net/ipv4/conf/$PHYS_IFACE/arp_announce\n\n` +
              
              `# Parse command line arguments\n` +
              `USE_DHCP=true\n` +
@@ -516,7 +524,7 @@ function generateCombinedNetworkScript(configs, ipAddresses) {
     script += `echo "Virtual interface IP addresses:"\n`;
     script += `ip -4 addr show | grep -A 2 "onv" | grep -v "valid_lft"\n`;
     
-    script += `\necho "To use static IP addresses instead of DHCP, run: sudo $0 --static"\n`;
+    script += `\necho "Static IP assignment is the default. To use DHCP instead, run: sudo $0 --dhcp"\n`;
     
     return script;
 }

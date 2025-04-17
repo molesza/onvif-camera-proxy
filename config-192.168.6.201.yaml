@@ -5,7 +5,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel1
-    uuid: 0a512fbb-5e07-4622-b8b4-ca8f9e676096
+    uuid: e2a4a77e-5076-4ab6-92ab-729421ebe78b
     highQuality:
       rtsp: /cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=1&subtype=0
@@ -33,7 +33,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel2
-    uuid: c5977a61-a264-4c5d-a674-35a244ac7691
+    uuid: 67b2c9d5-a5fc-4b9e-8303-8365e116606f
     highQuality:
       rtsp: /cam/realmonitor?channel=2&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=2&subtype=0
@@ -61,7 +61,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel3
-    uuid: 24807e3d-3bb7-4878-9b26-c97ffc528a7e
+    uuid: 153b4e5e-7143-4b9d-a53d-73736756b242
     highQuality:
       rtsp: /cam/realmonitor?channel=3&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=3&subtype=0
@@ -89,7 +89,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel4
-    uuid: 460bf8e2-318f-4753-84cf-48e6c2c54938
+    uuid: ab5a1029-b623-4cf4-9a64-0fcdd3b37f6e
     highQuality:
       rtsp: /cam/realmonitor?channel=4&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=4&subtype=0
@@ -117,7 +117,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel5
-    uuid: ea36744f-04a2-4647-9e81-a8ddff31d5c4
+    uuid: a61419d0-bc55-4a3e-bc30-7596d8abe54d
     highQuality:
       rtsp: /cam/realmonitor?channel=5&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=5&subtype=0
@@ -145,12 +145,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel6
-    uuid: 39bea0d4-a312-48e0-8257-1d6b7c85bbab
+    uuid: b6b21b73-6af0-4666-bdcd-81ad3d7d99e4
     highQuality:
       rtsp: /cam/realmonitor?channel=6&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=6&subtype=0
       width: 960
-      height: 1080
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -173,12 +173,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel7
-    uuid: 8bcb407b-d954-4495-8cc7-3ba123719d96
+    uuid: 511fcb56-1fe3-45b1-b29e-76126759bf27
     highQuality:
       rtsp: /cam/realmonitor?channel=7&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=7&subtype=0
       width: 960
-      height: 1080
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -201,7 +201,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel8
-    uuid: 893637e7-cb9b-4bb7-ac8d-e014920e4351
+    uuid: 3e63a25e-d76f-41b7-9c3b-4744658547b3
     highQuality:
       rtsp: /cam/realmonitor?channel=8&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=8&subtype=0
@@ -229,12 +229,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel9
-    uuid: 88309b9c-347a-4960-8dc3-ed176fec63f7
+    uuid: d9e64501-478b-4f27-a103-961939122070
     highQuality:
       rtsp: /cam/realmonitor?channel=9&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=9&subtype=0
       width: 960
-      height: 1080
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -257,7 +257,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel10
-    uuid: a779e7fb-953f-4e57-9163-fce631d9c82d
+    uuid: bb45bc92-7b61-4933-891c-436de864e4bb
     highQuality:
       rtsp: /cam/realmonitor?channel=10&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=10&subtype=0
@@ -285,7 +285,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel11
-    uuid: 1d313708-e9c7-4c96-b691-9286e08a36a8
+    uuid: 344bc212-371a-424b-9374-a78125bcc14f
     highQuality:
       rtsp: /cam/realmonitor?channel=11&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=11&subtype=0
@@ -313,7 +313,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel12
-    uuid: 109986f2-e1da-45e6-b3b7-027deb113d5e
+    uuid: b4a4f6ae-cfb7-4853-8381-804724a5fd96
     highQuality:
       rtsp: /cam/realmonitor?channel=12&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=12&subtype=0
@@ -341,7 +341,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel13
-    uuid: bcc61744-8254-46a4-b577-f11c2902e3df
+    uuid: 5cb40532-dad8-456d-b285-22b8c72fb17e
     highQuality:
       rtsp: /cam/realmonitor?channel=13&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=13&subtype=0
@@ -369,7 +369,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel14
-    uuid: d1ff4101-e8fb-47a0-bbfe-e5dddf6aaacb
+    uuid: 66a73315-db51-4ceb-820a-426f9b02d860
     highQuality:
       rtsp: /cam/realmonitor?channel=14&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=14&subtype=0
@@ -397,7 +397,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel15
-    uuid: 97a85e44-a57f-4107-bc2a-d52cdccdeaaf
+    uuid: a3bf901a-31be-4b6a-bb36-dfd03a79154d
     highQuality:
       rtsp: /cam/realmonitor?channel=15&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=15&subtype=0
@@ -425,7 +425,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel16
-    uuid: e0a734d4-3174-4988-abe0-ccc342574f30
+    uuid: 5720f359-f23b-4350-98fa-9b3f25c51b41
     highQuality:
       rtsp: /cam/realmonitor?channel=16&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=16&subtype=0
@@ -453,12 +453,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel17
-    uuid: 643bef14-51aa-4bb0-9af9-cd0307a7e138
+    uuid: 77a1bce2-7eec-484e-be6b-42f32189c34e
     highQuality:
       rtsp: /cam/realmonitor?channel=17&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=17&subtype=0
       width: 960
-      height: 1080
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -481,7 +481,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel18
-    uuid: 59b5e33c-085e-46d2-857b-df62b18b52fa
+    uuid: bbf70441-95da-4f18-8071-d34b7210d33e
     highQuality:
       rtsp: /cam/realmonitor?channel=18&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=18&subtype=0
@@ -509,7 +509,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel19
-    uuid: 2e329cf3-1c30-4ddb-b8c8-bf11a77f7c3f
+    uuid: 7e6edf29-8aa6-495d-81b6-7461db4bc61e
     highQuality:
       rtsp: /cam/realmonitor?channel=19&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=19&subtype=0
@@ -537,12 +537,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel20
-    uuid: 5abde1bd-586a-43db-bc83-66be230e1ce4
+    uuid: 29e0d899-8be7-4183-8777-b7f07084fade
     highQuality:
       rtsp: /cam/realmonitor?channel=20&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=20&subtype=0
       width: 960
-      height: 1080
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -565,7 +565,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel21
-    uuid: 0ecbe4df-34f6-457c-af19-a8f2b44e1bf6
+    uuid: 924855b7-555d-4bc5-a354-fc3b8e6c1b81
     highQuality:
       rtsp: /cam/realmonitor?channel=21&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=21&subtype=0
@@ -593,7 +593,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel22
-    uuid: 2d42e95b-402e-4334-8878-5234be02d9f6
+    uuid: f0f83c95-a875-4f93-a724-0ae87d30284a
     highQuality:
       rtsp: /cam/realmonitor?channel=22&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=22&subtype=0
@@ -621,12 +621,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel23
-    uuid: f46bb2e3-73d8-4605-9b91-184a55c6f356
+    uuid: 60cfc1af-07da-4ff0-a3af-7cf62d5d0780
     highQuality:
       rtsp: /cam/realmonitor?channel=23&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=23&subtype=0
       width: 960
-      height: 1080
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -649,7 +649,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel24
-    uuid: 0a08fa01-aa9d-4914-b78d-7ad7b3b85b8d
+    uuid: 0eb1a769-bed0-4b5b-934c-f59ecadfc7f9
     highQuality:
       rtsp: /cam/realmonitor?channel=24&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=24&subtype=0
@@ -677,12 +677,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel25
-    uuid: 0d0de388-75b6-4bb9-9952-22f65bd7f7b1
+    uuid: b001dea0-226c-4cc1-8bc9-37e1ba7a01ea
     highQuality:
       rtsp: /cam/realmonitor?channel=25&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=25&subtype=0
       width: 960
-      height: 1080
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -705,12 +705,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel26
-    uuid: 8f5702ac-c64c-4b57-82a4-3b69671e4180
+    uuid: 29d793d8-5c79-418c-ace1-bed09fc75208
     highQuality:
       rtsp: /cam/realmonitor?channel=26&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=26&subtype=0
       width: 960
-      height: 1080
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -733,7 +733,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel27
-    uuid: efe55be0-8f0f-4b84-aa19-cfc65a2d95e7
+    uuid: beb947ef-7592-40b1-bb25-5d2d0d423b72
     highQuality:
       rtsp: /cam/realmonitor?channel=27&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=27&subtype=0
@@ -761,7 +761,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel28
-    uuid: 5e7cf11e-c165-4cf3-a3c9-639928724ff8
+    uuid: a21f41e2-ad3a-4887-915f-697aebe02e56
     highQuality:
       rtsp: /cam/realmonitor?channel=28&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=28&subtype=0
@@ -789,7 +789,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel29
-    uuid: a3f36836-0fef-42e5-8cdc-eef3f57b3788
+    uuid: b0e89a96-fa32-460e-84bd-113219fa98ab
     highQuality:
       rtsp: /cam/realmonitor?channel=29&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=29&subtype=0
@@ -817,7 +817,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel30
-    uuid: f8d190a7-93e7-437c-b31b-cd3c2676d639
+    uuid: 0f36f3a0-7cee-4f90-b6bb-fec9ca7d2241
     highQuality:
       rtsp: /cam/realmonitor?channel=30&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=30&subtype=0
@@ -845,12 +845,12 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel31
-    uuid: 457e8eb3-726d-4931-b5b3-de96f48b65cd
+    uuid: a4a37688-94c8-4c3d-bb63-6e7ac1a6ef71
     highQuality:
       rtsp: /cam/realmonitor?channel=31&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=31&subtype=0
-      width: 1280
-      height: 720
+      width: 960
+      height: 576
       framerate: 15
       bitrate: 1024
       quality: 4
@@ -873,7 +873,7 @@ onvif:
       rtsp: 8554
       snapshot: 8580
     name: VideoSourceConfig_Channel32
-    uuid: 991806e4-3de9-4d73-9497-06cfbef0680a
+    uuid: a8c58a2b-4fef-46b3-a5ce-f9b115501828
     highQuality:
       rtsp: /cam/realmonitor?channel=32&subtype=0&unicast=true&proto=Onvif
       snapshot: /onvifsnapshot/media_service/snapshot?channel=32&subtype=0

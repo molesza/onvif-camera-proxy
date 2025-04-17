@@ -353,6 +353,7 @@ class OnvifServer {
             path: '/onvif/device_service', 
             services: this.onvif,
             xml: fs.readFileSync('./wsdl/device_service.wsdl', 'utf8'),
+            uri: './wsdl/device_service.wsdl', // Provide base URI context
             forceSoap12Headers: true
         });
 
@@ -360,6 +361,7 @@ class OnvifServer {
             path: '/onvif/media_service', 
             services: this.onvif,
             xml: fs.readFileSync('./wsdl/media_service.wsdl', 'utf8'),
+            uri: './wsdl/media_service.wsdl', // Provide base URI context
             forceSoap12Headers: true
         });
     }
