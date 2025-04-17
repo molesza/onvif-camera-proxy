@@ -362,22 +362,46 @@ function mergeConfigs(configs) {
     // Track MAC addresses to avoid duplicates
     const macAddresses = new Set();
     
+    // Track which cameras we're adding/updating for logging
+    let added = 0;
+    let skipped = 0;
+    let updated = 0;
+    
     // Add onvif entries from all configs, avoiding duplicates
     for (const config of configs) {
         if (config && config.onvif && Array.isArray(config.onvif)) {
             for (const camera of config.onvif) {
-                // Skip if this MAC address is already in the merged config
-                if (camera.mac && !macAddresses.has(camera.mac)) {
-                    macAddresses.add(camera.mac);
-                    mergedConfig.onvif.push(camera);
+                if (!camera.mac) {
+                    console.warn('Skipping camera without MAC address');
+                    skipped++;
+                    continue;
+                }
+
+                const existingIndex = mergedConfig.onvif.findIndex(c => c.mac === camera.mac);
+                if (existingIndex === -1) {
+                    // New camera
+                    if (!macAddresses.has(camera.mac)) {
+                        macAddresses.add(camera.mac);
+                        mergedConfig.onvif.push({...camera}); // Clone to avoid reference issues
+                        added++;
+                        console.log(`Added new camera: ${camera.name} (MAC: ${camera.mac})`);
+                    }
                 } else {
-                    console.log(`Skipping duplicate camera with MAC: ${camera.mac}`);
+                    // Update existing camera
+                    mergedConfig.onvif[existingIndex] = {...camera}; // Clone and replace
+                    updated++;
+                    console.log(`Updated existing camera: ${camera.name} (MAC: ${camera.mac})`);
                 }
             }
         }
     }
     
-    console.log(`Merged ${mergedConfig.onvif.length} unique cameras into combined config`);
+    console.log(`Merged config summary:`);
+    console.log(`- Added: ${added} new cameras`);
+    console.log(`- Updated: ${updated} existing cameras`);
+    console.log(`- Skipped: ${skipped} invalid entries`);
+    console.log(`Total cameras in merged config: ${mergedConfig.onvif.length}`);
+    
     return mergedConfig;
 }
 
@@ -672,15 +696,28 @@ async function createConfigWrapper(hostname, username, password) { // Renamed to
                 console.log(`Created new combined config`);
             }
             
-            // Save combined config
-            fs.writeFileSync(combinedConfigFilename, yaml.stringify(combinedConfig), 'utf8');
-            console.log(`Combined config saved to ${combinedConfigFilename}`);
+            // Save combined config with better error handling
+            try {
+                const combinedYaml = yaml.stringify(combinedConfig);
+                // First write to a temporary file
+                const tempFile = `${combinedConfigFilename}.tmp`;
+                fs.writeFileSync(tempFile, combinedYaml, 'utf8');
+                // Then rename to actual file (atomic operation)
+                fs.renameSync(tempFile, combinedConfigFilename);
+                console.log(`Combined config successfully saved to ${combinedConfigFilename}`);
+                // Log the number of cameras in the combined config
+                console.log(`Total cameras in combined config: ${combinedConfig.onvif.length}`);
+            } catch (writeErr) {
+                console.error(`Failed to save combined config: ${writeErr.message}`);
+                throw writeErr; // Re-throw to trigger error handling
+            }
             
             // Create combined network script
             // First, find all individual config files
             const configFiles = fs.readdirSync('.').filter(file =>
                 file.startsWith('config-') &&
                 file.endsWith('.yaml') &&
+                !file.startsWith('config-test-') && // Exclude test configs
                 file !== combinedConfigFilename
             );
             
@@ -762,17 +799,30 @@ async function createConfigWrapper(hostname, username, password) { // Renamed to
                         console.log(`Created new combined config`);
                     }
                     
-                    // Save combined config
-                    fs.writeFileSync(combinedConfigFilename, yaml.stringify(combinedConfig), 'utf8');
-                    console.log(`Combined config saved to ${combinedConfigFilename}`);
+                    // Save combined config with better error handling
+                    try {
+                        const combinedYaml = yaml.stringify(combinedConfig);
+                        // First write to a temporary file
+                        const tempFile = `${combinedConfigFilename}.tmp`;
+                        fs.writeFileSync(tempFile, combinedYaml, 'utf8');
+                        // Then rename to actual file (atomic operation)
+                        fs.renameSync(tempFile, combinedConfigFilename);
+                        console.log(`Combined config successfully saved to ${combinedConfigFilename}`);
+                        // Log the number of cameras in the combined config
+                        console.log(`Total cameras in combined config: ${combinedConfig.onvif.length}`);
+                    } catch (writeErr) {
+                        console.error(`Failed to save combined config: ${writeErr.message}`);
+                        throw writeErr; // Re-throw to trigger error handling
+                    }
                     
-                    // Create combined network script
-                    // First, find all individual config files
-                    const configFiles = fs.readdirSync('.').filter(file =>
-                        file.startsWith('config-') &&
-                        file.endsWith('.yaml') &&
-                        file !== combinedConfigFilename
-                    );
+            // Create combined network script
+            // First, find all individual config files
+            const configFiles = fs.readdirSync('.').filter(file =>
+                file.startsWith('config-') &&
+                file.endsWith('.yaml') &&
+                !file.startsWith('config-test-') && // Exclude test configs
+                file !== combinedConfigFilename
+            );
                     
                     const configs = [];
                     const ipAddresses = [];

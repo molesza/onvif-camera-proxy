@@ -2,7 +2,7 @@
 
 # Network setup script for ONVIF virtual interfaces
 # Generated for NVR: 192.168.6.201
-# Generated on: 2025-04-17T11:04:32.066Z
+# Generated on: 2025-04-17T14:43:06.753Z
 
 # Get the physical interface name (look for the interface with the host IP)
 HOST_IP=$(hostname -I | awk '{print $1}')

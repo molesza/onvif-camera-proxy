@@ -72,6 +72,15 @@ graph TD
 - Rationale: Enables multiple NVRs to connect without port collisions
 - Implementation: Port tracking in main.js with incremental assignment
 
+Current Issue: Port assignment is not properly incrementing between NVRs, causing conflicts:
+- All NVRs currently use same ports (RTSP=8554, Snapshot=8580)
+- Required Pattern:
+  * First NVR: RTSP=8554, Snapshot=8580
+  * Second NVR: RTSP=8556, Snapshot=8581
+  * Third NVR: RTSP=8558, Snapshot=8582
+- RTSP ports increment by 2 (for RTCP), Snapshot ports by 1
+- Fix needed in config-builder.js port assignment logic
+
 ### 3. MAC Address Generation
 - Decision: Generate consistent MAC addresses based on NVR IP and camera ID
 - Rationale: Ensures virtual interfaces have unique but deterministic MAC addresses

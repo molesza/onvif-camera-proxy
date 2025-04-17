@@ -9,6 +9,34 @@ const yaml = require('yaml');
 const fs = require('fs');
 const simpleLogger = require('simple-node-logger');
 
+/**
+ * Reads the MAC-to-IP mapping from the specified file.
+ * @param {string} filename - Path to the mapping file (defaults to 'mac_to_interface.txt')
+ * @returns {Object} A map where keys are lowercase MAC addresses and values are IP addresses.
+ */
+function readMacToIpMap(filename = 'mac_to_interface.txt') {
+    const map = {};
+    try {
+        if (!fs.existsSync(filename)) {
+             console.warn(`Warning: MAC to IP map file '${filename}' not found.`);
+             return map; // Return empty map if file doesn't exist
+        }
+        const lines = fs.readFileSync(filename, 'utf8').split('\n');
+        for (const line of lines) {
+            const parts = line.trim().split(/\s+/);
+            if (parts.length === 3) {
+                const [mac, iface, ip] = parts;
+                map[mac.toLowerCase()] = ip; // Store MAC in lowercase for consistent lookup
+            }
+        }
+        console.log(`Loaded ${Object.keys(map).length} MAC-to-IP mappings from ${filename}`);
+    } catch (e) {
+        console.error(`Error reading or parsing ${filename}: ${e.message}`);
+        // Return empty map on error as well, but log the error
+    }
+    return map;
+}
+
 const parser = new argparse.ArgumentParser({
     description: 'Virtual Onvif Server'
 });
@@ -52,15 +80,21 @@ if (args) {
                 process.stdout.write('Onvif Password: ');
                 rl.question('', (password) => {
                     console.log('Generating config ...');
+                    // Ensure createConfigWrapper handles potential errors gracefully
                     configBuilder.createConfig(hostname, username, password).then((config) => {
                         if (config) {
                             console.log('# ==================== CONFIG START ====================');
                             console.log(yaml.stringify(config));
                             console.log('# ===================== CONFIG END =====================');
-                        } else
-                        console.log('Failed to create config!');
+                        } else {
+                           console.log('Failed to create config!');
+                        }
+                    }).catch(err => {
+                        // Catch errors from the promise chain in createConfigWrapper
+                        console.error("Error during config generation:", err.message || err);
+                    }).finally(() => {
+                        rl.close();
                     });
-                    rl.close();
                 });
             });
         });
@@ -85,42 +119,75 @@ if (args) {
             return -1;
         }
 
+        // --- Read the MAC-to-IP map ---
+        const macToIpMap = readMacToIpMap();
+        if (Object.keys(macToIpMap).length === 0) {
+            logger.error('MAC to IP map file (mac_to_interface.txt) is empty or could not be read. Cannot determine IP addresses for servers.');
+            return -1; // Exit if we can't map MACs to IPs
+        }
+
         let proxies = {};
         // let discoveryStarted = false; // Discovery completely disabled
 
         for (let onvifConfig of config.onvif) {
-            let server = onvifServer.createServer(onvifConfig, logger);
-            if (server.getHostname()) {
-                logger.info(`Starting virtual onvif server for ${onvifConfig.name} on ${server.getHostname()}:${onvifConfig.ports.server} ...`);
+            // --- Look up the IP address for this camera ---
+            const mac = onvifConfig.mac ? onvifConfig.mac.toLowerCase() : null;
+            const ipAddress = mac ? macToIpMap[mac] : null; // Get IP from map
+
+            // --- Check if IP was found BEFORE creating server ---
+            if (ipAddress) {
+                // --- Pass the found IP address to createServer ---
+                let server = onvifServer.createServer(onvifConfig, logger, ipAddress);
+
+                // --- Use the looked-up IP address directly ---
+                logger.info(`Starting virtual onvif server for ${onvifConfig.name} on ${ipAddress}:${onvifConfig.ports.server} ...`);
                 server.startServer();
                 // Discovery call removed
-                // if (!discoveryStarted) {
-                //     server.startDiscovery();
-                //     discoveryStarted = true;
-                // }
+
                 if (args.debug)
                     server.enableDebugOutput();
                 logger.info('  Started!');
                 logger.info('');
 
-                if (!proxies[onvifConfig.target.hostname])
-                    proxies[onvifConfig.target.hostname] = {}
-                
-                if (onvifConfig.ports.rtsp && onvifConfig.target.ports.rtsp)
-                    proxies[onvifConfig.target.hostname][onvifConfig.ports.rtsp] = onvifConfig.target.ports.rtsp;
-                if (onvifConfig.ports.snapshot && onvifConfig.target.ports.snapshot)
-                    proxies[onvifConfig.target.hostname][onvifConfig.ports.snapshot] = onvifConfig.target.ports.snapshot;
+                // Setup proxies using the actual target hostname
+                const targetHostname = onvifConfig.target.hostname;
+                if (!proxies[targetHostname]) {
+                    proxies[targetHostname] = {};
+                }
+
+                // Use assigned proxy ports from the config
+                const rtspProxyPort = onvifConfig.ports.rtsp;
+                const snapshotProxyPort = onvifConfig.ports.snapshot;
+                const targetRtspPort = onvifConfig.target.ports.rtsp;
+                const targetSnapshotPort = onvifConfig.target.ports.snapshot;
+
+                if (rtspProxyPort && targetRtspPort) {
+                    proxies[targetHostname][rtspProxyPort] = targetRtspPort;
+                }
+                if (snapshotProxyPort && targetSnapshotPort) {
+                    proxies[targetHostname][snapshotProxyPort] = targetSnapshotPort;
+                }
+
             } else {
-                logger.error(`Failed to find IP address for MAC address ${onvifConfig.mac}`)
-                return -1;
+                // --- Log error if IP wasn't found for this MAC ---
+                logger.error(`Failed to find IP address in map for MAC address ${onvifConfig.mac}. Skipping server for ${onvifConfig.name}.`);
+                // Continue to the next camera instead of exiting
+                continue;
             }
         }
-        
+
+        // Start TCP proxies after iterating through all cameras
         for (let destinationAddress in proxies) {
             for (let sourcePort in proxies[destinationAddress]) {
-                logger.info(`Starting tcp proxy from port ${sourcePort} to ${destinationAddress}:${proxies[destinationAddress][sourcePort]} ...`);
-                tcpProxy.createProxy(sourcePort, destinationAddress, proxies[destinationAddress][sourcePort]);
-                logger.info('  Started!');
+                const targetPort = proxies[destinationAddress][sourcePort];
+                logger.info(`Starting tcp proxy from port ${sourcePort} to ${destinationAddress}:${targetPort} ...`);
+                try {
+                    // Ensure ports are numbers before passing to createProxy
+                    tcpProxy.createProxy(Number(sourcePort), destinationAddress, Number(targetPort));
+                    logger.info('  Started!');
+                } catch (proxyErr) {
+                    logger.error(`Failed to start TCP proxy on port ${sourcePort}: ${proxyErr.message}`);
+                }
                 logger.info('');
             }
         }
