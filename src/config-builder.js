@@ -812,11 +812,8 @@ async function createConfigWrapper(hostname, username, password) { // Renamed to
     return config; // Return config (which might be null if all attempts failed)
 }
 
-// Assign the wrapper function to the export
-exports.createConfig = createConfigWrapper;
-
 // Export necessary functions
-exports.createConfig = createConfig;
+exports.createConfig = createConfigWrapper; // Use the wrapper that creates files
 exports.createTestConfig = createTestConfig;
 exports.generateNetworkScript = generateNetworkScript;
 exports.generateCombinedNetworkScript = generateCombinedNetworkScript;
