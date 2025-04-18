@@ -127,7 +127,11 @@ if (args) {
         }
 
         let proxies = {};
-        // let discoveryStarted = false; // Discovery completely disabled
+        // --- START: Dynamic Port Assignment Logic ---
+        let baseRtspPort = 8554;
+        let baseSnapshotPort = 8580;
+        let nvrPorts = {}; // Stores { nvrHostname: { rtsp: port, snapshot: port } }
+        // --- END: Dynamic Port Assignment Logic ---
 
         for (let onvifConfig of config.onvif) {
             // --- Look up the IP address for this camera ---
@@ -136,11 +140,30 @@ if (args) {
 
             // --- Check if IP was found BEFORE creating server ---
             if (ipAddress) {
+                // --- START: Assign Ports ---
+                const targetHostname = onvifConfig.target.hostname;
+                if (!nvrPorts[targetHostname]) {
+                    // First time seeing this NVR, assign current base ports
+                    logger.info(`Assigning base ports for new NVR ${targetHostname}: RTSP=${baseRtspPort}, Snapshot=${baseSnapshotPort}`);
+                    nvrPorts[targetHostname] = {
+                        rtsp: baseRtspPort,
+                        snapshot: baseSnapshotPort
+                    };
+                    // Increment base ports for the *next* NVR
+                    baseRtspPort += 2; // Increment RTSP by 2 (for RTCP)
+                    baseSnapshotPort += 1; // Increment Snapshot by 1
+                }
+                // Update the config object *in memory* with the assigned ports for this NVR
+                onvifConfig.ports.rtsp = nvrPorts[targetHostname].rtsp;
+                onvifConfig.ports.snapshot = nvrPorts[targetHostname].snapshot;
+                // --- END: Assign Ports ---
+
                 // --- Pass the found IP address to createServer ---
                 let server = onvifServer.createServer(onvifConfig, logger, ipAddress);
 
                 // --- Use the looked-up IP address directly ---
                 logger.info(`Starting virtual onvif server for ${onvifConfig.name} on ${ipAddress}:${onvifConfig.ports.server} ...`);
+                logger.info(`  Target: ${targetHostname}, Proxy Ports: RTSP=${onvifConfig.ports.rtsp}, Snapshot=${onvifConfig.ports.snapshot}`); // Log assigned proxy ports
                 server.startServer();
                 // Discovery call removed
 
@@ -150,22 +173,24 @@ if (args) {
                 logger.info('');
 
                 // Setup proxies using the actual target hostname
-                const targetHostname = onvifConfig.target.hostname;
                 if (!proxies[targetHostname]) {
                     proxies[targetHostname] = {};
                 }
 
-                // Use assigned proxy ports from the config
+                // Use assigned proxy ports from the *updated* onvifConfig
                 const rtspProxyPort = onvifConfig.ports.rtsp;
                 const snapshotProxyPort = onvifConfig.ports.snapshot;
                 const targetRtspPort = onvifConfig.target.ports.rtsp;
                 const targetSnapshotPort = onvifConfig.target.ports.snapshot;
 
-                if (rtspProxyPort && targetRtspPort) {
+                // Add ports to the proxy map *only if they haven't been added for this NVR yet*
+                if (rtspProxyPort && targetRtspPort && !proxies[targetHostname][rtspProxyPort]) {
                     proxies[targetHostname][rtspProxyPort] = targetRtspPort;
+                    logger.trace(`Added RTSP proxy mapping: NVR=${targetHostname}, ProxyPort=${rtspProxyPort}, TargetPort=${targetRtspPort}`);
                 }
-                if (snapshotProxyPort && targetSnapshotPort) {
+                if (snapshotProxyPort && targetSnapshotPort && !proxies[targetHostname][snapshotProxyPort]) {
                     proxies[targetHostname][snapshotProxyPort] = targetSnapshotPort;
+                    logger.trace(`Added Snapshot proxy mapping: NVR=${targetHostname}, ProxyPort=${snapshotProxyPort}, TargetPort=${targetSnapshotPort}`);
                 }
 
             } else {
@@ -177,19 +202,23 @@ if (args) {
         }
 
         // Start TCP proxies after iterating through all cameras
+        // This loop now correctly uses the 'proxies' map which contains the dynamically assigned ports
         for (let destinationAddress in proxies) {
+            logger.info(`Setting up proxies for target NVR: ${destinationAddress}`);
             for (let sourcePort in proxies[destinationAddress]) {
                 const targetPort = proxies[destinationAddress][sourcePort];
-                logger.info(`Starting tcp proxy from port ${sourcePort} to ${destinationAddress}:${targetPort} ...`);
+                // Determine if it's RTSP or Snapshot based on port number for logging
+                const proxyType = (Number(sourcePort) % 2 === 0 && Number(sourcePort) < 8580) ? "RTSP" : "Snapshot";
+                logger.info(`  Starting ${proxyType} proxy: Port ${sourcePort} -> ${destinationAddress}:${targetPort}`);
                 try {
                     // Ensure ports are numbers before passing to createProxy
                     tcpProxy.createProxy(Number(sourcePort), destinationAddress, Number(targetPort));
-                    logger.info('  Started!');
+                    logger.info('    Started!');
                 } catch (proxyErr) {
-                    logger.error(`Failed to start TCP proxy on port ${sourcePort}: ${proxyErr.message}`);
+                    logger.error(`    Failed to start TCP proxy on port ${sourcePort}: ${proxyErr.message}`);
                 }
-                logger.info('');
             }
+            logger.info(''); // Add newline after each NVR's proxy setup
         }
 
     } else {

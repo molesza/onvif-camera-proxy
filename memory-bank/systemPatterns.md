@@ -70,16 +70,24 @@ graph TD
 ### 2. Dynamic Port Assignment
 - Decision: Dynamically assign proxy ports to avoid conflicts
 - Rationale: Enables multiple NVRs to connect without port collisions
-- Implementation: Port tracking in main.js with incremental assignment
+- Implementation: Runtime port assignment in main.js with NVR tracking
 
-Current Issue: Port assignment is not properly incrementing between NVRs, causing conflicts:
-- All NVRs currently use same ports (RTSP=8554, Snapshot=8580)
-- Required Pattern:
-  * First NVR: RTSP=8554, Snapshot=8580
-  * Second NVR: RTSP=8556, Snapshot=8581
-  * Third NVR: RTSP=8558, Snapshot=8582
-- RTSP ports increment by 2 (for RTCP), Snapshot ports by 1
-- Fix needed in config-builder.js port assignment logic
+#### Implementation Details
+The dynamic port assignment is implemented in main.js using the following approach:
+1. Initialize base ports (RTSP=8554, Snapshot=8580)
+2. Track NVRs and their assigned ports in a map during runtime
+3. When a new NVR is encountered:
+   - Assign current base ports to the NVR
+   - Increment base ports for the next NVR (RTSP +2, Snapshot +1)
+4. Update the configuration in memory with the assigned ports
+5. Use these updated ports when setting up TCP proxies
+
+This approach follows the required pattern:
+- First NVR: RTSP=8554, Snapshot=8580
+- Second NVR: RTSP=8556, Snapshot=8581
+- Third NVR: RTSP=8558, Snapshot=8582
+
+The solution maintains the original configuration files while dynamically adjusting ports at runtime to avoid conflicts.
 
 ### 3. MAC Address Generation
 - Decision: Generate consistent MAC addresses based on NVR IP and camera ID
@@ -101,12 +109,19 @@ Current Issue: Port assignment is not properly incrementing between NVRs, causin
 - Consistent logging pattern for troubleshooting
 - Debug mode toggles verbose logging
 
-## Current Implementation Challenges
+## Implementation Challenges (Resolved)
 
-### 1. OnvifServer Reference Issue
-- The current critical issue stems from a reference problem with the OnvifServer class
-- Likely related to class definition or module export pattern
+### 1. OnvifServer Reference Issue - FIXED
+- The issue was related to class definition and export in `src/onvif-server.js`
+- Fixed by properly exporting both class and factory function
+- Updated syntax and code structure to eliminate errors
 
 ### 2. Network Interface Management
 - Network interfaces require root access and may need recreation after system restart
 - Current pattern requires manual intervention to run setup scripts
+- Enhanced with IP verification and robust retry logic
+
+### 3. Multi-NVR Port Conflicts - FIXED
+- Implemented runtime port assignment in main.js
+- Added NVR tracking and dynamic port allocation
+- Resolved EADDRINUSE errors when using multiple NVRs

@@ -38,9 +38,11 @@
    - Fixed file extensions for schemas
 
 3. ✅ **Multi-NVR Proxy Port Conflicts**
-   - Implemented dynamic port assignment
-   - Track assigned ports per NVR
-   - Incrementing from base ports to avoid conflicts
+   - Implemented dynamic port assignment in main.js
+   - Added tracking of NVRs and assigned ports during runtime
+   - Implemented port incrementation (RTSP +2, Snapshot +1) for each new NVR
+   - Updated in-memory configuration with correct ports
+   - Fixed EADDRINUSE errors when using multiple NVRs
 
 4. ✅ **Static IP Assignment**
    - Modified network scripts to default to static IPs
