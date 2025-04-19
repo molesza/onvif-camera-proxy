@@ -5,7 +5,7 @@ function extractPath(url) {
     return url.substr(url.indexOf('/', url.indexOf('//') + 2));
 }
 
-async function createConfig(hostname, username, password) {
+async function createConfig(hostname, port, username, password) {
     let options = {
         forceSoap12Headers: true
     };
@@ -59,11 +59,8 @@ async function createConfig(hostname, username, password) {
         throw `Error: ${err.message}`;
     }
 
-    let config = {
-        onvif: []
-    };
+    let cameraConfigs = [];
 
-    let serverPort = 8081;
     for (let camera in cameras) {
         let mainStream = cameras[camera][0];
         let subStream = cameras[camera][cameras[camera].length > 1 ? 1 : 0];
@@ -82,70 +79,36 @@ async function createConfig(hostname, username, password) {
         }
 
         let cameraConfig = {
-            mac: '<ONVIF PROXY MAC ADDRESS HERE>',
-            ports: {
-                server: serverPort,
-                rtsp: 8554,
-                snapshot: 8580
-            },
-            name: mainStream.VideoSourceConfiguration.Name,
-            uuid: uuid.v4(),
-            highQuality: {
-                rtsp: extractPath(mainStream.streamUri),
-                snapshot: extractPath(mainStream.snapshotUri),
-                width: mainStream.VideoEncoderConfiguration.Resolution.Width,
-                height: mainStream.VideoEncoderConfiguration.Resolution.Height,
-                framerate: mainStream.VideoEncoderConfiguration.RateControl.FrameRateLimit,
-                bitrate: mainStream.VideoEncoderConfiguration.RateControl.BitrateLimit,
-                quality: 4.0
-            },
-            lowQuality: {
-                rtsp: extractPath(subStream.streamUri),
-                snapshot: extractPath(subStream.snapshotUri),
-                width: subStream.VideoEncoderConfiguration.Resolution.Width,
-                height: subStream.VideoEncoderConfiguration.Resolution.Height,
-                framerate: subStream.VideoEncoderConfiguration.RateControl.FrameRateLimit,
-                bitrate: subStream.VideoEncoderConfiguration.RateControl.BitrateLimit,
-                quality: 1.0
-            },
-            target: {
-                hostname: hostname,
-                ports: {
-                    rtsp: 554,
-                    snapshot: hostport
-                }
-            }
+            original_name: mainStream.VideoSourceConfiguration.Name,
+            profile_token: mainStream.attributes.token,
+            video_source_token: mainStream.VideoSourceConfiguration.SourceToken,
+            hq_rtsp_path: extractPath(mainStream.streamUri),
+            hq_snapshot_path: extractPath(mainStream.snapshotUri),
+            hq_width: mainStream.VideoEncoderConfiguration.Resolution.Width,
+            hq_height: mainStream.VideoEncoderConfiguration.Resolution.Height,
+            hq_framerate: mainStream.VideoEncoderConfiguration.RateControl.FrameRateLimit,
+            hq_bitrate: mainStream.VideoEncoderConfiguration.RateControl.BitrateLimit,
+            lq_rtsp_path: extractPath(subStream.streamUri),
+            lq_snapshot_path: extractPath(subStream.snapshotUri),
+            lq_width: subStream.VideoEncoderConfiguration.Resolution.Width,
+            lq_height: subStream.VideoEncoderConfiguration.Resolution.Height,
+            lq_framerate: subStream.VideoEncoderConfiguration.RateControl.FrameRateLimit,
+            lq_bitrate: subStream.VideoEncoderConfiguration.RateControl.BitrateLimit,
+            target_nvr_rtsp_port: 554, // Default RTSP port
+            target_nvr_snapshot_port: port // NVR HTTP port
         };
 
-        config.onvif.push(cameraConfig);
-        serverPort++;
+        cameraConfigs.push(cameraConfig);
     }
 
-    return config;
+    return cameraConfigs;
 }
 
-exports.createConfig = async function(hostname, username, password) {
-
-    let config;
+exports.createConfig = async function(hostname, port, username, password) {
     try {
-        config = await createConfig(hostname, username, password);
+        return await createConfig(hostname, port, username, password);
     } catch (err) {
-        console.log(err);
-        if (err.includes('time check failed')) {
-            console.log('Retrying...')
-
-            var utcHours = (new Date()).getUTCHours();
-            Date.prototype.getUTCHours = function() {
-                return utcHours + 1;
-            }
-
-            try {
-                config = await createConfig(hostname, username, password);
-            } catch (err) {
-                console.log(err);
-            }
-        }
+        console.error(err);
+        throw err; // Re-throw the error to be handled by the caller
     }
-
-    return config;
 }
